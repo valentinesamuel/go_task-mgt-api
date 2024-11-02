@@ -8,18 +8,17 @@ import (
 	"strconv"
 )
 
-type TaskHandler struct {
-	repo *repository.TaskRepository
+type taskHandlerImpl struct {
+	repo repository.TaskRepository
 }
 
-func NewTaskHandler(repo *repository.TaskRepository) *TaskHandler {
-	return &TaskHandler{
+func NewTaskHandler(repo repository.TaskRepository) TaskHandler {
+	return &taskHandlerImpl{
 		repo: repo,
 	}
-
 }
 
-func (h *TaskHandler) CreateTask(c *gin.Context) {
+func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
 	var task models.Task
 
 	if err := c.ShouldBindJSON(&task); err != nil {
@@ -35,7 +34,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, task)
 }
 
-func (h *TaskHandler) GetTask(c *gin.Context) {
+func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
@@ -50,7 +49,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
-func (h *TaskHandler) ListTasks(c *gin.Context) {
+func (h *taskHandlerImpl) ListTasks(c *gin.Context) {
 	tasks, err := h.repo.List()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tasks"})
@@ -60,7 +59,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
-func (h *TaskHandler) UpdateTask(c *gin.Context) {
+func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
@@ -82,7 +81,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
-func (h *TaskHandler) DeleteTask(c *gin.Context) {
+func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
