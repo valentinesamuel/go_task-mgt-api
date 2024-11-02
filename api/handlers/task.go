@@ -26,12 +26,13 @@ func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Create(&task); err != nil {
+	newTask, err := h.repo.Create(&task)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, task)
+	c.JSON(http.StatusCreated, newTask)
 }
 
 func (h *taskHandlerImpl) GetTask(c *gin.Context) {
@@ -73,12 +74,13 @@ func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 	}
 	task.ID = uint(id)
 
-	if err := h.repo.Update(&task); err != nil {
+	updatedTask, err := h.repo.Update(&task)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update task"})
 		return
 	}
 
-	c.JSON(http.StatusOK, task)
+	c.JSON(http.StatusOK, updatedTask)
 }
 
 func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
@@ -88,9 +90,10 @@ func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Delete(uint(id)); err != nil {
+	deletedTask, err := h.repo.Delete(uint(id))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete task"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Task deleted"})
+	c.JSON(http.StatusOK, deletedTask)
 }
