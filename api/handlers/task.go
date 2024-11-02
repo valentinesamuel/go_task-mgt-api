@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/repository"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
@@ -20,19 +22,18 @@ func NewTaskHandler(repo repository.TaskRepository) TaskHandler {
 
 func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
 	var task models.Task
-
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	newTask, err := h.repo.Create(&task)
+	created, err := h.repo.Create(&task)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, newTask)
+	c.JSON(http.StatusCreated, created)
 }
 
 func (h *taskHandlerImpl) GetTask(c *gin.Context) {
@@ -44,7 +45,11 @@ func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 
 	task, err := h.repo.Get(uint(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Task not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, task)
@@ -74,13 +79,17 @@ func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 	}
 	task.ID = uint(id)
 
-	updatedTask, err := h.repo.Update(&task)
+	updated, err := h.repo.Update(&task)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update task"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedTask)
+	c.JSON(http.StatusOK, updated)
 }
 
 func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
@@ -90,10 +99,15 @@ func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	deletedTask, err := h.repo.Delete(uint(id))
+	deleted, err := h.repo.Delete(uint(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete task"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, deletedTask)
+
+	c.JSON(http.StatusOK, deleted)
 }
