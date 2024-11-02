@@ -1,4 +1,3 @@
-// internal/repository/task.go
 package repository
 
 import (
@@ -26,7 +25,6 @@ func (r *taskRepositoryImpl) Create(ctx context.Context, task *models.Task) (*mo
 		return nil, errors.New("task is empty")
 	}
 
-	// Use validation package
 	if err := validation.ValidateTask(task); err != nil {
 		return nil, err
 	}
@@ -38,32 +36,16 @@ func (r *taskRepositoryImpl) Create(ctx context.Context, task *models.Task) (*mo
 	return task, nil
 }
 
-//	func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, error) {
-//		if id == 0 {
-//			return nil, errors.New("invalid task id")
-//		}
-//
-//		var task models.Task
-//		err := r.db.WithContext(ctx).First(&task, id).Error
-//		if err != nil {
-//			if errors.Is(err, gorm.ErrRecordNotFound) {
-//				return nil, fmt.Errorf("task not found with id %d", id)
-//			}
-//			return nil, fmt.Errorf("failed to get task: %w", err)
-//		}
-//
-//		return &task, nil
-//	}
 func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, error) {
 	if id == 0 {
-		return nil, gorm.ErrRecordNotFound // Return GORM's record not found error directly
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	var task models.Task
 	err := r.db.WithContext(ctx).First(&task, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, gorm.ErrRecordNotFound // Return GORM's error directly
+			return nil, gorm.ErrRecordNotFound
 		}
 		return nil, fmt.Errorf("failed to get task: %w", err)
 	}

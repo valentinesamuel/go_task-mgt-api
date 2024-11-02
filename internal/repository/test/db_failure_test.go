@@ -13,7 +13,6 @@ import (
 )
 
 func TestDatabaseFailures(t *testing.T) {
-	// Setup faulty DB
 	db := testutils.SetupFaultyDB()
 	repo := repository.NewTaskRepository(db)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

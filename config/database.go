@@ -22,12 +22,10 @@ func InitDB() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to get underlying DB connection: %w", err)
 	}
 
-	// Set connection pool settings
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(50)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	// Test connection with context timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

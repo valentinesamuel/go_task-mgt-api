@@ -69,7 +69,6 @@ func TestDeleteTask(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			// Create request with proper context
 			req := httptest.NewRequest(http.MethodDelete, "/tasks/"+tt.taskID, nil)
 			c.Request = req
 			c.Params = []gin.Param{{Key: "id", Value: tt.taskID}}
