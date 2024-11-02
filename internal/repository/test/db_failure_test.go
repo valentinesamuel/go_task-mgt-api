@@ -1,4 +1,3 @@
-// internal/repository/test/db_failure_test.go
 package repository_test
 
 import (

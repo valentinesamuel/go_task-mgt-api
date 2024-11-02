@@ -16,8 +16,6 @@ import (
 	"testing"
 )
 
-// api/handlers/test/update_test.go
-// api/handlers/test/update_test.go
 func TestUpdateTask(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
