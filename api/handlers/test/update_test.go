@@ -12,25 +12,23 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
 // api/handlers/test/update_test.go
+// api/handlers/test/update_test.go
 func TestUpdateTask(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-
-	validTask := &models.Task{
-		ID:       1,
-		Title:    "Updated Task",
-		Priority: models.PriorityHigh,
-		Status:   "done",
-	}
 
 	tests := []struct {
 		name             string
 		taskID           string
 		input            models.Task
-		mockExpectations func(*mocks.MockTaskRepository)
+		mockGetReturn    *models.Task
+		mockGetError     error
+		mockUpdateReturn *models.Task
+		mockUpdateError  error
 		wantStatus       int
 		wantError        string
 	}{
@@ -40,15 +38,22 @@ func TestUpdateTask(t *testing.T) {
 			input: models.Task{
 				Title:    "Updated Task",
 				Priority: models.PriorityHigh,
-				Status:   "done",
+				Status:   models.StatusTodo,
 			},
-			mockExpectations: func(m *mocks.MockTaskRepository) {
-				m.On("Get", uint(1)).Return(validTask, nil)
-				m.On("Update", mock.MatchedBy(func(t *models.Task) bool {
-					return t.ID == 1
-				})).Return(validTask, nil)
+			mockGetReturn: &models.Task{ID: 1}, // For existence check
+			mockUpdateReturn: &models.Task{
+				ID:       1,
+				Title:    "Updated Task",
+				Priority: models.PriorityHigh,
+				Status:   models.StatusTodo,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "invalid id",
+			taskID:     "abc",
+			wantStatus: http.StatusBadRequest,
+			wantError:  "Invalid ID format",
 		},
 		{
 			name:   "not found",
@@ -56,34 +61,43 @@ func TestUpdateTask(t *testing.T) {
 			input: models.Task{
 				Title:    "Not Found Task",
 				Priority: models.PriorityHigh,
-				Status:   "todo",
+				Status:   models.StatusTodo,
 			},
-			mockExpectations: func(m *mocks.MockTaskRepository) {
-				m.On("Get", uint(999)).Return(nil, gorm.ErrRecordNotFound)
-			},
-			wantStatus: http.StatusNotFound,
-			wantError:  "Task not found",
-		},
-		{
-			name:             "invalid id",
-			taskID:           "abc",
-			input:            models.Task{},
-			mockExpectations: func(m *mocks.MockTaskRepository) {},
-			wantStatus:       http.StatusBadRequest,
-			wantError:        "Invalid ID format",
+			mockGetError: gorm.ErrRecordNotFound,
+			wantStatus:   http.StatusNotFound,
+			wantError:    "Task not found",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(mocks.MockTaskRepository)
-			tt.mockExpectations(mockRepo)
+
+			if tt.taskID != "abc" {
+				id, _ := strconv.ParseUint(tt.taskID, 10, 32)
+				// Setup Get mock
+				mockRepo.On("Get", mock.Anything, uint(id)).
+					Return(tt.mockGetReturn, tt.mockGetError).
+					Once()
+
+				if tt.mockGetError == nil {
+					// Setup Update mock
+					mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*models.Task")).
+						Return(tt.mockUpdateReturn, tt.mockUpdateError).
+						Once()
+				}
+			}
 
 			handler := handlers.NewTaskHandler(mockRepo)
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
+
+			// Create request with proper context
+			req := httptest.NewRequest(http.MethodPut, "/tasks/"+tt.taskID, nil)
+			c.Request = req
 			c.Params = []gin.Param{{Key: "id", Value: tt.taskID}}
 
+			// Add request body
 			jsonData, _ := json.Marshal(tt.input)
 			c.Request = httptest.NewRequest(http.MethodPut, "/tasks/"+tt.taskID, bytes.NewBuffer(jsonData))
 			c.Request.Header.Set("Content-Type", "application/json")
@@ -93,13 +107,15 @@ func TestUpdateTask(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, w.Code)
 
 			var response map[string]interface{}
-			err := json.Unmarshal(w.Body.Bytes(), &response)
-			if err != nil {
-				return
-			}
+			json.Unmarshal(w.Body.Bytes(), &response)
 
 			if tt.wantError != "" {
 				assert.Contains(t, response["error"], tt.wantError)
+			} else {
+				assert.Equal(t, float64(tt.mockUpdateReturn.ID), response["id"])
+				assert.Equal(t, tt.mockUpdateReturn.Title, response["title"])
+				assert.Equal(t, string(tt.mockUpdateReturn.Priority), response["priority"])
+				assert.Equal(t, string(tt.mockUpdateReturn.Status), response["status"])
 			}
 
 			mockRepo.AssertExpectations(t)

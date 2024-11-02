@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"context"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 )
 
 type TaskRepository interface {
-	Create(task *models.Task) (*models.Task, error)
-	Update(task *models.Task) (*models.Task, error)
-	Delete(id uint) (*models.Task, error)
-	Get(id uint) (*models.Task, error)
-	List() ([]models.Task, error)
+	Create(ctx context.Context, task *models.Task) (*models.Task, error)
+	Get(ctx context.Context, id uint) (*models.Task, error)
+	List(ctx context.Context) ([]models.Task, error)
+	Update(ctx context.Context, task *models.Task) (*models.Task, error)
+	Delete(ctx context.Context, id uint) (*models.Task, error)
 }

@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/repository"
@@ -17,6 +18,7 @@ func TestTaskRepository_Update(t *testing.T) {
 		name    string
 		task    *models.Task
 		wantErr bool
+		ctx     context.Context
 	}{
 		{
 			name: "valid update",
@@ -27,11 +29,13 @@ func TestTaskRepository_Update(t *testing.T) {
 				Status:   "done",
 			},
 			wantErr: false,
+			ctx:     context.Background(),
 		},
 		{
 			name:    "nil task",
 			task:    nil,
 			wantErr: true,
+			ctx:     context.Background(),
 		},
 		{
 			name: "non-existent task",
@@ -40,12 +44,13 @@ func TestTaskRepository_Update(t *testing.T) {
 				Title: "Non-existent",
 			},
 			wantErr: true,
+			ctx:     context.Background(),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			updated, err := repo.Update(tt.task)
+			updated, err := repo.Update(tt.ctx, tt.task)
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, updated)

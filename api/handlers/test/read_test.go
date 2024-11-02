@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
@@ -33,8 +34,8 @@ func TestGetTask(t *testing.T) {
 			mockReturn: &models.Task{
 				ID:       1,
 				Title:    "Test Task",
-				Priority: "high",
-				Status:   "todo",
+				Priority: models.PriorityHigh,
+				Status:   models.StatusTodo,
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -47,7 +48,6 @@ func TestGetTask(t *testing.T) {
 		{
 			name:       "task not found",
 			taskID:     "999",
-			mockReturn: nil,
 			mockError:  gorm.ErrRecordNotFound,
 			wantStatus: http.StatusNotFound,
 			wantError:  "Task not found",
@@ -60,12 +60,18 @@ func TestGetTask(t *testing.T) {
 
 			if tt.taskID != "abc" {
 				id, _ := strconv.ParseUint(tt.taskID, 10, 32)
-				mockRepo.On("Get", uint(id)).Return(tt.mockReturn, tt.mockError)
+				mockRepo.On("Get", mock.Anything, uint(id)).
+					Return(tt.mockReturn, tt.mockError).
+					Once()
 			}
 
 			handler := handlers.NewTaskHandler(mockRepo)
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
+
+			// Create request with proper context
+			req := httptest.NewRequest(http.MethodGet, "/tasks/"+tt.taskID, nil)
+			c.Request = req
 			c.Params = []gin.Param{{Key: "id", Value: tt.taskID}}
 
 			handler.GetTask(c)
@@ -77,6 +83,11 @@ func TestGetTask(t *testing.T) {
 
 			if tt.wantError != "" {
 				assert.Contains(t, response["error"], tt.wantError)
+			} else {
+				assert.Equal(t, float64(tt.mockReturn.ID), response["id"])
+				assert.Equal(t, tt.mockReturn.Title, response["title"])
+				assert.Equal(t, string(tt.mockReturn.Priority), response["priority"])
+				assert.Equal(t, string(tt.mockReturn.Status), response["status"])
 			}
 
 			mockRepo.AssertExpectations(t)
@@ -97,8 +108,18 @@ func TestListTasks(t *testing.T) {
 		{
 			name: "successful list",
 			mockReturn: []models.Task{
-				{ID: 1, Title: "Task 1"},
-				{ID: 2, Title: "Task 2"},
+				{
+					ID:       1,
+					Title:    "Task 1",
+					Priority: models.PriorityHigh,
+					Status:   models.StatusTodo,
+				},
+				{
+					ID:       2,
+					Title:    "Task 2",
+					Priority: models.PriorityMedium,
+					Status:   models.StatusInProgress,
+				},
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -113,24 +134,40 @@ func TestListTasks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(mocks.MockTaskRepository)
-			mockRepo.On("List").Return(tt.mockReturn, tt.mockError)
+			mockRepo.On("List", mock.Anything).Return(tt.mockReturn, tt.mockError).Once()
 
 			handler := handlers.NewTaskHandler(mockRepo)
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			// Create request with proper context
+			req := httptest.NewRequest(http.MethodGet, "/tasks", nil)
+			c.Request = req
+
 			handler.ListTasks(c)
 
 			assert.Equal(t, tt.wantStatus, w.Code)
 
-			if tt.wantError == "" {
-				var response []models.Task
-				json.Unmarshal(w.Body.Bytes(), &response)
-				assert.Len(t, response, len(tt.mockReturn))
-			} else {
+			if tt.wantError != "" {
 				var response map[string]interface{}
-				json.Unmarshal(w.Body.Bytes(), &response)
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					return
+				}
 				assert.Contains(t, response["error"], tt.wantError)
+			} else {
+				var response []models.Task
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					return
+				}
+				assert.Equal(t, len(tt.mockReturn), len(response))
+				for i, task := range response {
+					assert.Equal(t, tt.mockReturn[i].ID, task.ID)
+					assert.Equal(t, tt.mockReturn[i].Title, task.Title)
+					assert.Equal(t, tt.mockReturn[i].Priority, task.Priority)
+					assert.Equal(t, tt.mockReturn[i].Status, task.Status)
+				}
 			}
 
 			mockRepo.AssertExpectations(t)

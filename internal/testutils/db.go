@@ -1,6 +1,8 @@
 package testutils
 
 import (
+	"context"
+	"database/sql"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/repository"
 	"gorm.io/driver/sqlite"
@@ -9,7 +11,7 @@ import (
 )
 
 func SetupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)
 	}
@@ -23,14 +25,22 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 }
 
 func CreateTestTask(t *testing.T, repo repository.TaskRepository) *models.Task {
+	ctx := context.Background() // Add context
 	task := &models.Task{
 		Title:    "Test Task",
 		Priority: "high",
 		Status:   "todo",
 	}
-	created, err := repo.Create(task)
+	created, err := repo.Create(ctx, task) // Pass context to Create
 	if err != nil {
 		t.Fatalf("Failed to create test task: %v", err)
 	}
 	return created
+}
+
+func SetupFaultyDB() *gorm.DB {
+	sqlDB, _ := sql.Open("sqlite3", ":memory:")
+	_ = sqlDB.Close() // Close immediately to simulate failure
+	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	return db
 }

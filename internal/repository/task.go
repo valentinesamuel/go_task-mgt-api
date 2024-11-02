@@ -1,8 +1,12 @@
+// internal/repository/task.go
 package repository
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/validation"
 	"gorm.io/gorm"
 )
 
@@ -11,79 +15,111 @@ type taskRepositoryImpl struct {
 }
 
 func NewTaskRepository(db *gorm.DB) TaskRepository {
-	return &taskRepositoryImpl{
-		db: db,
+	if db == nil {
+		panic("database connection cannot be nil")
 	}
+	return &taskRepositoryImpl{db: db}
 }
 
-func (r *taskRepositoryImpl) Create(task *models.Task) (*models.Task, error) {
+func (r *taskRepositoryImpl) Create(ctx context.Context, task *models.Task) (*models.Task, error) {
 	if task == nil {
 		return nil, errors.New("task is empty")
 	}
 
-	if err := r.db.Create(task).Error; err != nil {
+	// Use validation package
+	if err := validation.ValidateTask(task); err != nil {
 		return nil, err
+	}
+
+	if err := r.db.WithContext(ctx).Create(task).Error; err != nil {
+		return nil, fmt.Errorf("failed to create task: %w", err)
 	}
 
 	return task, nil
 }
 
-func (r *taskRepositoryImpl) Get(id uint) (*models.Task, error) {
+//	func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, error) {
+//		if id == 0 {
+//			return nil, errors.New("invalid task id")
+//		}
+//
+//		var task models.Task
+//		err := r.db.WithContext(ctx).First(&task, id).Error
+//		if err != nil {
+//			if errors.Is(err, gorm.ErrRecordNotFound) {
+//				return nil, fmt.Errorf("task not found with id %d", id)
+//			}
+//			return nil, fmt.Errorf("failed to get task: %w", err)
+//		}
+//
+//		return &task, nil
+//	}
+func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, error) {
 	if id == 0 {
-		return nil, errors.New("task not found")
+		return nil, gorm.ErrRecordNotFound // Return GORM's record not found error directly
 	}
 
-	task := models.Task{}
-	if err := r.db.First(&task, id).Error; err != nil {
-		return nil, err
+	var task models.Task
+	err := r.db.WithContext(ctx).First(&task, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound // Return GORM's error directly
+		}
+		return nil, fmt.Errorf("failed to get task: %w", err)
 	}
 
 	return &task, nil
 }
 
-func (r *taskRepositoryImpl) List() ([]models.Task, error) {
+func (r *taskRepositoryImpl) List(ctx context.Context) ([]models.Task, error) {
 	var tasks []models.Task
-
-	if err := r.db.Find(&tasks).Error; err != nil {
-		return nil, err
+	err := r.db.WithContext(ctx).Find(&tasks).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tasks: %w", err)
 	}
 
 	return tasks, nil
 }
 
-func (r *taskRepositoryImpl) Update(task *models.Task) (*models.Task, error) {
-	if task == nil {
-		return nil, errors.New("task is invalid")
+func (r *taskRepositoryImpl) Update(ctx context.Context, task *models.Task) (*models.Task, error) {
+	if task == nil || task.ID == 0 {
+		return nil, errors.New("invalid task or task id")
 	}
 
 	var exists models.Task
-	if err := r.db.First(&exists, task.ID).Error; err != nil {
-		return nil, err
+	err := r.db.WithContext(ctx).First(&exists, task.ID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("task not found with id %d", task.ID)
+		}
+		return nil, fmt.Errorf("failed to verify task existence: %w", err)
 	}
 
-	if err := r.db.Save(task).Error; err != nil {
-		return nil, err
+	err = r.db.WithContext(ctx).Save(task).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to update task: %w", err)
 	}
 
-	var updated models.Task
-	if err := r.db.First(&updated, task.ID).Error; err != nil {
-		return nil, err
-	}
-	return &updated, nil
+	return task, nil
 }
 
-func (r *taskRepositoryImpl) Delete(id uint) (*models.Task, error) {
+func (r *taskRepositoryImpl) Delete(ctx context.Context, id uint) (*models.Task, error) {
 	if id == 0 {
-		return nil, errors.New("task not found")
+		return nil, errors.New("invalid task id")
 	}
 
 	var task models.Task
-	if err := r.db.First(&task, id).Error; err != nil {
-		return nil, err
+	err := r.db.WithContext(ctx).First(&task, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("task not found with id %d", id)
+		}
+		return nil, fmt.Errorf("failed to get task: %w", err)
 	}
 
-	if err := r.db.Delete(&task).Error; err != nil {
-		return nil, err
+	err = r.db.WithContext(ctx).Delete(&task).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete task: %w", err)
 	}
 
 	return &task, nil

@@ -6,6 +6,14 @@ import (
 
 type Priority string
 
+type Status string
+
+const (
+	StatusTodo       Status = "todo"
+	StatusInProgress Status = "in_progress"
+	StatusDone       Status = "done"
+)
+
 const (
 	PriorityLow    Priority = "low"
 	PriorityMedium Priority = "medium"
@@ -17,7 +25,7 @@ type Task struct {
 	Title       string    `json:"title" binding:"required,min=3,max=100"`
 	Description string    `json:"description" binding:"max=100"`
 	Priority    Priority  `json:"priority" binding:"required,oneof=low medium high"`
-	Status      string    `json:"status" binding:"required,oneof=todo in_progress done"`
+	Status      Status    `json:"status" binding:"required,oneof=todo in_progress done"`
 	DueDate     time.Time `json:"due_date,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
