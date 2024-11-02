@@ -56,24 +56,35 @@ func (r *taskRepositoryImpl) Update(task *models.Task) (*models.Task, error) {
 		return nil, errors.New("task is invalid")
 	}
 
-	if err := r.db.Save(&task).Error; err != nil {
+	var exists models.Task
+	if err := r.db.First(&exists, task.ID).Error; err != nil {
 		return nil, err
 	}
 
-	updatedTask := models.Task{}
-	if err := r.db.First(&updatedTask).Error; err != nil {
+	if err := r.db.Save(task).Error; err != nil {
 		return nil, err
 	}
-	return &updatedTask, nil
+
+	var updated models.Task
+	if err := r.db.First(&updated, task.ID).Error; err != nil {
+		return nil, err
+	}
+	return &updated, nil
 }
 
 func (r *taskRepositoryImpl) Delete(id uint) (*models.Task, error) {
 	if id == 0 {
 		return nil, errors.New("task not found")
 	}
-	task := models.Task{}
-	if err := r.db.Delete(&task, id).Error; err != nil {
+
+	var task models.Task
+	if err := r.db.First(&task, id).Error; err != nil {
 		return nil, err
 	}
+
+	if err := r.db.Delete(&task).Error; err != nil {
+		return nil, err
+	}
+
 	return &task, nil
 }
