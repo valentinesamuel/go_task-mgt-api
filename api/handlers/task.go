@@ -72,6 +72,17 @@ func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 		return
 	}
 
+	_, err = h.repo.Get(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Then bind and update
 	var task models.Task
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -81,10 +92,6 @@ func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 
 	updated, err := h.repo.Update(&task)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -99,12 +106,18 @@ func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	deleted, err := h.repo.Delete(uint(id))
+	_, err = h.repo.Get(uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 			return
 		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	deleted, err := h.repo.Delete(uint(id))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
