@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
-	"gorm.io/driver/postgres"
+	//"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"time"
 )
 
 func InitDB() (*gorm.DB, error) {
-	dsn := "host=localhost user=postgres password=postgres dbname=taskmgt port=5432 sslmode=disable"
+	//dsn := "host=localhost user=postgres password=postgres dbname=taskmgt port=5432 sslmode=disable"
 
 	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	db, err := gorm.Open(sqlite.Open("../prod.db"), &gorm.Config{})
