@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
-	"github.com/valentinesamuel/go_task-mgt-api/internal/repository"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/task"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"testing"
 )
 
 func SetupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("../test.db"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)
 	}
@@ -24,14 +24,14 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func CreateTestTask(t *testing.T, repo repository.TaskRepository) *models.Task {
+func CreateTestTask(t *testing.T, repo task.TaskRepository) *models.Task {
 	ctx := context.Background() // Add context
-	task := &models.Task{
+	testTask := &models.Task{
 		Title:    "Test Task",
 		Priority: "high",
 		Status:   "todo",
 	}
-	created, err := repo.Create(ctx, task) // Pass context to Create
+	created, err := repo.Create(ctx, testTask) // Pass context to Create
 	if err != nil {
 		t.Fatalf("Failed to create test task: %v", err)
 	}

@@ -1,4 +1,4 @@
-package handlers_test
+package handler_test_test
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/valentinesamuel/go_task-mgt-api/api/handlers"
-	"github.com/valentinesamuel/go_task-mgt-api/internal/mocks"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/task/test/repository_test"
 	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
@@ -69,7 +69,7 @@ func TestUpdateTask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mocks.MockTaskRepository)
+			mockRepo := new(repository_test.MockTaskRepository)
 
 			if tt.taskID != "abc" {
 				id, _ := strconv.ParseUint(tt.taskID, 10, 32)

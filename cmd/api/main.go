@@ -2,9 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/valentinesamuel/go_task-mgt-api/api/handlers"
 	"github.com/valentinesamuel/go_task-mgt-api/config"
-	"github.com/valentinesamuel/go_task-mgt-api/internal/repository"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/task"
 	"log"
 )
 
@@ -14,8 +13,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	taskRepo := repository.NewTaskRepository(db)
-	taskHandler := handlers.NewTaskHandler(taskRepo)
+	taskRepo := task.NewTaskRepository(db)
+	taskHandler := task.NewTaskHandler(taskRepo)
 
 	r := gin.Default()
 

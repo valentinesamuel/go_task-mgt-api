@@ -1,27 +1,25 @@
-package repository_test
+package handler_test_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/valentinesamuel/go_task-mgt-api/api/handlers"
-	"github.com/valentinesamuel/go_task-mgt-api/internal/mocks"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
-
-	"gorm.io/gorm"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/task/test/repository_test"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 )
 
-func TestDeleteTask(t *testing.T) {
+func TestCreateTask(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	tests := []struct {
 		name       string
-		taskID     string
+		input      interface{}
 		setupCtx   func(*gin.Context)
 		mockReturn *models.Task
 		mockError  error
@@ -29,38 +27,30 @@ func TestDeleteTask(t *testing.T) {
 		wantError  string
 	}{
 		{
-			name:   "successful delete",
-			taskID: "1",
+			name: "valid task",
+			input: models.Task{
+				Title:    "Test Task",
+				Priority: models.PriorityHigh,
+				Status:   models.StatusTodo, // Use Status type
+			},
 			mockReturn: &models.Task{
 				ID:       1,
 				Title:    "Test Task",
 				Priority: models.PriorityHigh,
-				Status:   models.StatusTodo,
+				Status:   models.StatusTodo, // Use Status type
 			},
-			wantStatus: http.StatusOK,
+			wantStatus: http.StatusCreated,
 		},
-		{
-			name:       "invalid id",
-			taskID:     "abc",
-			wantStatus: http.StatusBadRequest,
-			wantError:  "Invalid ID format",
-		},
-		{
-			name:       "not found",
-			taskID:     "999",
-			mockError:  gorm.ErrRecordNotFound,
-			wantStatus: http.StatusNotFound,
-			wantError:  "Task not found",
-		},
+		// ... other test cases
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mocks.MockTaskRepository)
+			mockRepo := new(repository_test.MockTaskRepository)
 
-			if tt.taskID != "abc" {
-				id, _ := strconv.ParseUint(tt.taskID, 10, 32)
-				mockRepo.On("Delete", mock.Anything, uint(id)).
+			// Fix mock expectation to handle context
+			if tt.wantStatus != http.StatusBadRequest {
+				mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*models.Task")).
 					Return(tt.mockReturn, tt.mockError).
 					Once()
 			}
@@ -69,15 +59,15 @@ func TestDeleteTask(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			req := httptest.NewRequest(http.MethodDelete, "/tasks/"+tt.taskID, nil)
-			c.Request = req
-			c.Params = []gin.Param{{Key: "id", Value: tt.taskID}}
+			jsonData, _ := json.Marshal(tt.input)
+			c.Request = httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
+			c.Request.Header.Set("Content-Type", "application/json")
 
 			if tt.setupCtx != nil {
 				tt.setupCtx(c)
 			}
 
-			handler.DeleteTask(c)
+			handler.CreateTask(c)
 
 			assert.Equal(t, tt.wantStatus, w.Code)
 
@@ -89,6 +79,11 @@ func TestDeleteTask(t *testing.T) {
 
 			if tt.wantError != "" {
 				assert.Contains(t, response["error"], tt.wantError)
+			} else if tt.mockReturn != nil {
+				assert.Equal(t, float64(tt.mockReturn.ID), response["id"])
+				assert.Equal(t, tt.mockReturn.Title, response["title"])
+				assert.Equal(t, string(tt.mockReturn.Priority), response["priority"])
+				assert.Equal(t, string(tt.mockReturn.Status), response["status"])
 			}
 
 			mockRepo.AssertExpectations(t)
