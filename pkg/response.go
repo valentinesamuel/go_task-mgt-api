@@ -17,6 +17,9 @@ type successResponse struct {
 	Data    interface{} `json:"data"`
 }
 
+type SwaggerErrorResponse errorResponse
+type SwaggerSuccessResponse successResponse
+
 func LogError(err error) {
 	if err != nil {
 		log.Println(err)

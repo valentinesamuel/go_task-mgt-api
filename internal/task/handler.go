@@ -30,6 +30,17 @@ func NewTaskHandler(repo TaskRepository) TaskHandler {
 
 var validate = validator.New()
 
+// CreateTask creates a new task
+// @Summary Create a new task
+// @Description Creates a new task and stores it in the database
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param task body models.Task true "Task details"
+// @Success 201 {object} pkg.SwaggerSuccessResponse "Task created successfully"
+// @Failure 400 {object} pkg.SwaggerErrorResponse "Invalid request payload or validation error"
+// @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to create task"
+// @Router /tasks [post]
 func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
