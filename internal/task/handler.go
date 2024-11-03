@@ -84,6 +84,18 @@ func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
 	))
 }
 
+// GetTask godoc
+// @Summary Get a task by ID
+// @Description Retrieve a task by its unique ID
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} pkg.SwaggerSuccessResponse
+// @Failure 400 {object} pkg.SwaggerErrorResponse "Invalid ID format"
+// @Failure 404 {object} pkg.SwaggerErrorResponse "Task not found"
+// @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to retrieve task"
+// @Router /tasks/{id} [get]
 func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -110,6 +122,15 @@ func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Task retrieved successfully", task))
 }
 
+// ListTasks godoc
+// @Summary List all tasks
+// @Description Retrieve a list of all tasks
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Success 200 {object} pkg.SwaggerSuccessResponse
+// @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to retrieve tasks"
+// @Router /tasks [get]
 func (h *taskHandlerImpl) ListTasks(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -126,6 +147,19 @@ func (h *taskHandlerImpl) ListTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Tasks retrieved successfully", tasks))
 }
 
+// UpdateTask godoc
+// @Summary Update a task
+// @Description Update an existing task by ID
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Param task body models.Task true "Task data"
+// @Success 200 {object} models.Task "Task updated successfully"
+// @Failure 400 {object} pkg.SwaggerErrorResponse "Invalid ID format or validation error"
+// @Failure 404 {object} pkg.SwaggerErrorResponse "Task not found"
+// @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to update task"
+// @Router /tasks/{id} [put]
 func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -169,6 +203,16 @@ func (h *taskHandlerImpl) UpdateTask(c *gin.Context) {
 	c.JSON(http.StatusOK, updated)
 }
 
+// DeleteTask godoc
+// @Summary Delete a task
+// @Description Delete an existing task by ID
+// @Tags tasks
+// @Param id path int true "Task ID"
+// @Success 200 {object} pkg.SwaggerSuccessResponse "Task deleted successfully"
+// @Failure 400 {object} pkg.SwaggerErrorResponse "Invalid ID format"
+// @Failure 404 {object} pkg.SwaggerErrorResponse "Task not found"
+// @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to delete task"
+// @Router /tasks/{id} [delete]
 func (h *taskHandlerImpl) DeleteTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()

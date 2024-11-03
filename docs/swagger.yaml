@@ -81,6 +81,24 @@ info:
   version: "1.0"
 paths:
   /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pkg.SwaggerSuccessResponse'
+        "500":
+          description: Failed to retrieve tasks
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+      summary: List all tasks
+      tags:
+      - tasks
     post:
       consumes:
       - application/json
@@ -108,6 +126,105 @@ paths:
           schema:
             $ref: '#/definitions/pkg.SwaggerErrorResponse'
       summary: Create a new task
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: Delete an existing task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Task deleted successfully
+          schema:
+            $ref: '#/definitions/pkg.SwaggerSuccessResponse'
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "500":
+          description: Failed to delete task
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+      summary: Delete a task
+      tags:
+      - tasks
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a task by its unique ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pkg.SwaggerSuccessResponse'
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "500":
+          description: Failed to retrieve task
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+      summary: Get a task by ID
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update an existing task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task updated successfully
+          schema:
+            $ref: '#/definitions/models.Task'
+        "400":
+          description: Invalid ID format or validation error
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+        "500":
+          description: Failed to update task
+          schema:
+            $ref: '#/definitions/pkg.SwaggerErrorResponse'
+      summary: Update a task
       tags:
       - tasks
 swagger: "2.0"
