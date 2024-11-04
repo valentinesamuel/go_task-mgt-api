@@ -6,7 +6,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/valentinesamuel/go_task-mgt-api/config"
 	_ "github.com/valentinesamuel/go_task-mgt-api/docs"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/auth"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/task"
+	"github.com/valentinesamuel/go_task-mgt-api/internal/user"
 	"log"
 )
 
@@ -21,6 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	authRepo := user.NewUserRepository(db)
+	authHandler := auth.NewAuthHandler(authRepo)
+
 	taskRepo := task.NewTaskRepository(db)
 	taskHandler := task.NewTaskHandler(taskRepo)
 
@@ -34,13 +39,20 @@ func main() {
 		})
 	})
 
-	tasks := r.Group("/tasks")
+	authRoute := r.Group("/auth")
 	{
-		tasks.POST("/", taskHandler.CreateTask)
-		tasks.GET("/:id", taskHandler.GetTask)
-		tasks.GET("/", taskHandler.ListTasks)
-		tasks.PUT("/:id", taskHandler.UpdateTask)
-		tasks.DELETE("/:id", taskHandler.DeleteTask)
+		authRoute.POST("/register", authHandler.RegisterUser)
+		authRoute.POST("/login", authHandler.LoginUser)
+		authRoute.POST("/logout", authHandler.LogoutUser)
+	}
+
+	taskRoute := r.Group("/tasks")
+	{
+		taskRoute.POST("/", taskHandler.CreateTask)
+		taskRoute.GET("/:id", taskHandler.GetTask)
+		taskRoute.GET("/", taskHandler.ListTasks)
+		taskRoute.PUT("/:id", taskHandler.UpdateTask)
+		taskRoute.DELETE("/:id", taskHandler.DeleteTask)
 
 	}
 

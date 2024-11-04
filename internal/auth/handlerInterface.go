@@ -5,7 +5,7 @@ import (
 )
 
 type AuthHandler interface {
-	Register(c *gin.Context)
-	Login(c *gin.Context)
-	Logout(c *gin.Context)
+	RegisterUser(c *gin.Context)
+	LoginUser(c *gin.Context)
+	LogoutUser(c *gin.Context)
 }
