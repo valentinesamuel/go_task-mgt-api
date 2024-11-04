@@ -42,6 +42,7 @@ var validate = validator.New()
 // @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to create task"
 // @Router /tasks [post]
 func (h *taskHandlerImpl) CreateTask(c *gin.Context) {
+	// i don't think this request is accepting the body of the request
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
