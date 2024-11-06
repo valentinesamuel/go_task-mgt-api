@@ -53,14 +53,27 @@ func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, er
 	return &task, nil
 }
 
-func (r *taskRepositoryImpl) List(ctx context.Context) ([]models.Task, error) {
-	var tasks []models.Task
-	err := r.db.WithContext(ctx).Find(&tasks).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to list tasks: %w", err)
+func (r *taskRepositoryImpl) List(ctx context.Context, page int, limit int) ([]models.Task, int, int, int64, error) {
+	if page < 1 {
+		page = 1
 	}
 
-	return tasks, nil
+	if limit < 1 {
+		limit = 10
+	}
+
+	var tasks []models.Task
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Task{}).
+		Count(&total).
+		Offset((page - 1) * limit).
+		Limit(limit).
+		Find(&tasks).Error
+	if err != nil {
+		return nil, 0, 0, 0, fmt.Errorf("failed to list tasks: %w", err)
+	}
+
+	return tasks, page, limit, total, nil
 }
 
 func (r *taskRepositoryImpl) Update(ctx context.Context, task *models.Task) (*models.Task, error) {

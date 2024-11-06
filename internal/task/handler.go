@@ -128,6 +128,8 @@ func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 // @Tags tasks
 // @Accept json
 // @Produce json
+// @Param page query int false "Page number"
+// @Param pageSize query int false "Page size"
 // @Success 200 {object} pkg.SwaggerSuccessResponse
 // @Failure 500 {object} pkg.SwaggerErrorResponse "Failed to retrieve tasks"
 // @Router /tasks [get]
@@ -135,16 +137,27 @@ func (h *taskHandlerImpl) ListTasks(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	tasks, err := h.repo.List(ctx)
+	tasks, currentPage, limit, total, err := h.repo.List(ctx, page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, pkg.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve tasks", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Tasks retrieved successfully", tasks))
+	c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Tasks retrieved successfully", gin.H{"tasks": tasks, "currentPage": currentPage, "limit": limit, "total": total}))
+
 }
 
 // UpdateTask godoc
