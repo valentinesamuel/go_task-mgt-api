@@ -35,7 +35,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	err = db.AutoMigrate(&models.Task{})
+	err = db.AutoMigrate(&models.Task{}, &models.User{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}

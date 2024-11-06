@@ -9,6 +9,7 @@ import (
 	"github.com/valentinesamuel/go_task-mgt-api/internal/auth"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/task"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/user"
+	"github.com/valentinesamuel/go_task-mgt-api/pkg/middleware"
 	"log"
 )
 
@@ -48,6 +49,7 @@ func main() {
 
 	taskRoute := r.Group("/tasks")
 	{
+		taskRoute.Use(middleware.AuthMiddleware())
 		taskRoute.POST("/", taskHandler.CreateTask)
 		taskRoute.GET("/:id", taskHandler.GetTask)
 		taskRoute.GET("/", taskHandler.ListTasks)
