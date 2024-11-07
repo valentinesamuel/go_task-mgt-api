@@ -38,7 +38,6 @@ lint:
 .PHONY: start build test clean lint
 
 up:
-<<<<<<< HEAD
 	@echo "Starting all services..."
 	docker-compose up -d
 
@@ -53,12 +52,3 @@ down:
 clean:
 	@echo "Cleaning up unused resources across all services..."
 	docker compose down -v --remove-orphans
-=======
-	docker-compose up -d
-
-down:
-	docker-compose down
-
-logs:
-	docker-compose logs -f
->>>>>>> 275e780 (FEAT: ADDED EFK STACK FOR LOGGING)
