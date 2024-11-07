@@ -36,3 +36,19 @@ lint:
 	golangci-lint run
 
 .PHONY: start build test clean lint
+
+up:
+	@echo "Starting all services..."
+	docker-compose up -d
+
+logs:
+	@echo "Showing logs for all services..."
+	docker-compose logs -f
+
+down:
+	@echo "Stopping all services..."
+	docker-compose down
+
+clean:
+	@echo "Cleaning up unused resources across all services..."
+	docker compose down -v --remove-orphans
