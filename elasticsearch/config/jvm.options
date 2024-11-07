@@ -1,0 +1,20 @@
+# Memory settings
+-Xms512m
+-Xmx512m
+
+# GC settings
+8-13:-XX:+UseConcMarkSweepGC
+8-13:-XX:CMSInitiatingOccupancyFraction=75
+8-13:-XX:+UseCMSInitiatingOccupancyOnly
+
+# JVM options
+-Dfile.encoding=UTF-8
+-Djava.awt.headless=true
+-Djna.nosys=true
+
+# Heap dumps
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=data
+
+# JVM temporary directory
+-Djava.io.tmpdir=${ES_TMPDIR}

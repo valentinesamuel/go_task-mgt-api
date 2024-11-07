@@ -1,44 +1,75 @@
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+  app:
+    build: .
     ports:
-      - "9200:9200"
-    environment:
-      - discovery.type=single-node
-#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    container_name: elasticsearch
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.15.0
-    ports:
-      - "5601:5601"
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/app/.env 
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    networks:
+      - app-network
     depends_on:
       - elasticsearch
-    container_name: kibana
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   filebeat:
-    build:
-        context: ./filebeat
-    container_name: filebeat
-    command: filebeat -e -strict.perms=false
+    image: docker.elastic.co/beats/filebeat:7.17.25
     volumes:
-      - ./logs:/src/logs
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/app/logs:ro
+      - filebeat_data:/usr/share/filebeat/data
+    networks:
+      - app-network
     depends_on:
       - elasticsearch
       - kibana
+    command: filebeat -e -strict.perms=false
+    user: root
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - KIBANA_HOST=http://kibana:5601
 
-  task_mgt_api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: task_mgt_api
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/jvm.options:/usr/share/elasticsearch/config/jvm.options:ro
+      - elasticsearch_data:/usr/share/elasticsearch/data
     ports:
-      - "8080:8080"
+      - "9200:9200"
+    networks:
+      - app-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - app-network
     depends_on:
       - elasticsearch
     volumes:
-      - ./logs:/src/logs
+      - ./kibana/config:/usr/share/kibana/config
+      - kibana_data:/usr/share/kibana/data
 
 volumes:
-    elasticsearch-data:
-      driver: local
+  elasticsearch_data:
+  kibana_data:
+  filebeat_data:
+
+networks:
+  app-network:
+    driver: bridge

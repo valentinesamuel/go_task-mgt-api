@@ -1,0 +1,10 @@
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+
+# Minimum memory settings
+discovery.type: single-node
+xpack.security.enabled: false
+
+# Path settings
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
