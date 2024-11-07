@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 	//"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -41,4 +42,14 @@ func InitDB() (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func SetupDatabase() *gorm.DB {
+	db, err := InitDB()
+	if err != nil {
+		logger.Fatal(err, "Failed to connect to the database")
+	} else {
+		logger.Info("Successfully connected to the database")
+	}
+	return db
 }

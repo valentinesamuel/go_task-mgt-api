@@ -1,0 +1,4 @@
+{"@timestamp":"2024-11-07T09:37:46.224+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2024-11-07T09:37:46.224+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
+{"@timestamp":"2024-11-07T09:38:32.056+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2024-11-07T09:38:32.057+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
