@@ -2,24 +2,24 @@
 
 ## Areas to Explore
 
-- [ ] **Basic API Development**
-     - [ ] Setting up RESTful APIs, routing, and handling HTTP requests.
-     - [ ] Creating endpoints for managing tasks
+- [X] **Basic API Development**
+     - [X] Setting up RESTful APIs, routing, and handling HTTP requests.
+     - [X] Creating endpoints for managing tasks
 
-- [ ] **Data Modeling and Persistence**
-     - [ ] Database design, SQL/NoSQL, and data persistence.
-     - [ ] Designing schemas for tasks, users, and relationships.
+- [X] **Data Modeling and Persistence**
+     - [X] Database design, SQL/NoSQL, and data persistence.
+     - [X] Designing schemas for tasks, users, and relationships.
 
 - [ ] **Concurrency and Asynchronous Processing**
      - [ ] Managing concurrent processes for inventory updates.
-     - [ ] Using background jobs for low-stock alerts and automated reordering.
+     - [X] Using background jobs for low-stock alerts and automated reordering.
 
 - [ ] **Authentication and Authorization**
      - [ ] Securing the API with user authentication (e.g., JWT).
      - [ ] Implementing role-based access control.
 
-- [ ] **Error Handling and Validation**
-     - [ ] Handling errors and validating inputs for data integrity.
+- [X] **Error Handling and Validation**
+     - [X] Handling errors and validating inputs for data integrity.
 
 - [ ] **Caching for Performance Optimization**
      - [ ] Reducing database load by caching frequently accessed data.

@@ -11,4 +11,5 @@ type TaskRepository interface {
 	List(ctx context.Context, page int, limit int) ([]models.Task, int, int, int64, error)
 	Update(ctx context.Context, task *models.Task) (*models.Task, error)
 	Delete(ctx context.Context, id uint) (*models.Task, error)
+	GetTasksByStatus(status models.Status) ([]models.Task, error)
 }

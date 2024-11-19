@@ -53,6 +53,16 @@ func (r *taskRepositoryImpl) Get(ctx context.Context, id uint) (*models.Task, er
 	return &task, nil
 }
 
+func (r *taskRepositoryImpl) GetTasksByStatus(status models.Status) ([]models.Task, error) {
+	var tasks []models.Task
+	err := r.db.Where("status = ?", status).Find(&tasks).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tasks by status: %w", err)
+	}
+
+	return tasks, nil
+}
+
 func (r *taskRepositoryImpl) List(ctx context.Context, page int, limit int) ([]models.Task, int, int, int64, error) {
 	if page < 1 {
 		page = 1

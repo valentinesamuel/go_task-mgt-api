@@ -7,6 +7,7 @@ import (
 	"github.com/valentinesamuel/go_task-mgt-api/internal/auth"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/task"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/user"
+	"github.com/valentinesamuel/go_task-mgt-api/workers"
 	"os"
 )
 
@@ -31,6 +32,9 @@ func main() {
 
 	taskRepo := task.NewTaskRepository(db)
 	taskHandler := task.NewTaskHandler(taskRepo)
+
+	cronService := workers.NewCronService(taskRepo)
+	cronService.StartCron()
 
 	r := config.SetupRouter(authHandler, taskHandler)
 
