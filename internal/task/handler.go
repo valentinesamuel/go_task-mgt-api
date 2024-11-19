@@ -3,11 +3,14 @@ package task
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/valentinesamuel/go_task-mgt-api/internal/models"
 	"github.com/valentinesamuel/go_task-mgt-api/pkg"
+	"github.com/valentinesamuel/go_task-mgt-api/services"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -15,8 +18,9 @@ import (
 )
 
 type taskHandlerImpl struct {
-	repo TaskRepository
-	mu   sync.RWMutex
+	repo  TaskRepository
+	mu    sync.RWMutex
+	redis *services.RedisService
 }
 
 func NewTaskHandler(repo TaskRepository) TaskHandler {
@@ -106,10 +110,20 @@ func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 		return
 	}
 
+	// Try to get from cache first
+	cacheKey := fmt.Sprintf("task:%d", id)
+	var task *models.Task
+	err = h.redis.Get(cacheKey, &task)
+	if err == nil {
+		c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Task retrieved from cache", task))
+		return
+	}
+
+	// If not in cache, get from DB
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	task, err := h.repo.Get(ctx, uint(id))
+	task, err = h.repo.Get(ctx, uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, pkg.NewErrorResponse(http.StatusNotFound, "Task not found", err.Error()))
@@ -117,6 +131,12 @@ func (h *taskHandlerImpl) GetTask(c *gin.Context) {
 		}
 		c.JSON(http.StatusInternalServerError, pkg.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve task", err.Error()))
 		return
+	}
+
+	// Cache the task for 5 minutes
+	err = h.redis.Set(cacheKey, task, 5*time.Minute)
+	if err != nil {
+		log.Printf("Failed to cache task: %v", err)
 	}
 
 	c.JSON(http.StatusOK, pkg.NewSuccessResponse(http.StatusOK, "Task retrieved successfully", task))
