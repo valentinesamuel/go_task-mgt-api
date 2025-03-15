@@ -19,22 +19,22 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:7.17.25
+  fluentbit:
+    image: fluent/fluent-bit:2.2
     volumes:
-      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./fluentbit/config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluentbit/config/parsers.conf:/fluent-bit/etc/parsers.conf:ro
       - ./logs:/app/logs:ro
-      - filebeat_data:/usr/share/filebeat/data
     networks:
       - app-network
     depends_on:
       - elasticsearch
       - kibana
-    command: filebeat -e -strict.perms=false
-    user: root
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - KIBANA_HOST=http://kibana:5601
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - KIBANA_HOST=kibana
+      - KIBANA_PORT=5601
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -68,7 +68,6 @@ services:
 volumes:
   elasticsearch_data:
   kibana_data:
-  filebeat_data:
 
 networks:
   app-network:

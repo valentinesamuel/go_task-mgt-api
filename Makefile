@@ -35,7 +35,7 @@ tidy:
 lint:
 	golangci-lint run
 
-.PHONY: start build test clean lint
+.PHONY: start build test clean lint up logs app-logs elk-logs down restart-logging check-indices
 
 up:
 	@echo "Starting all services..."
@@ -45,10 +45,26 @@ logs:
 	@echo "Showing logs for all services..."
 	docker-compose logs -f
 
+app-logs:
+	@echo "Showing application logs..."
+	tail -f logs/*.log
+
+elk-logs:
+	@echo "Showing Fluent Bit logs..."
+	docker-compose logs -f fluentbit
+
 down:
 	@echo "Stopping all services..."
 	docker-compose down
 
 clean:
 	@echo "Cleaning up unused resources across all services..."
-	docker compose down -v --remove-orphans
+	docker-compose down -v --remove-orphans
+
+restart-logging:
+	@echo "Restarting Fluent Bit service..."
+	docker-compose restart fluentbit
+
+check-indices:
+	@echo "Checking Elasticsearch indices..."
+	curl -X GET "http://localhost:9200/_cat/indices?v"

@@ -30,8 +30,8 @@
 - [X] **Pagination, Filtering, and Sorting**
      - [X] Managing large data sets with efficient data retrieval.
 
-- [ ] **Rate Limiting and Throttling**
-     - [ ] Controlling access to prevent abuse and ensure resource availability.
+- [X] **Rate Limiting and Throttling**
+     - [X] Controlling access to prevent abuse and ensure resource availability.
 
 - [V] **Dependency Injection and Interfaces**
      - [V] Using interfaces and dependency injection for flexibility and testability.

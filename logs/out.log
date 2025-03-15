@@ -13,3 +13,17 @@
 {"@timestamp":"2024-11-19T14:15:01.805+0100","ecs.version":"1.6.0","log.level":"fatal","message":"listen tcp :8080: bind: address already in use"}
 {"@timestamp":"2024-11-19T14:15:20.355+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
 {"@timestamp":"2024-11-19T14:15:20.356+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
+{"@timestamp":"2025-03-15T01:51:30.065+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2025-03-15T01:51:30.066+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
+{"@timestamp":"2025-03-15T01:53:13.938+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2025-03-15T01:53:13.939+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
+{"@timestamp":"2025-03-15T01:53:19.319+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":350125,"log.level":"info","message":"Request details","method":"GET","path":"/docs/index.html","status_code":200}
+{"@timestamp":"2025-03-15T01:53:19.406+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":443750,"log.level":"info","message":"Request details","method":"GET","path":"/docs/swagger-ui-standalone-preset.js","status_code":200}
+{"@timestamp":"2025-03-15T01:53:19.407+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":215000,"log.level":"info","message":"Request details","method":"GET","path":"/docs/swagger-ui.css","status_code":200}
+{"@timestamp":"2025-03-15T01:53:19.417+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":10449709,"log.level":"info","message":"Request details","method":"GET","path":"/docs/swagger-ui-bundle.js","status_code":200}
+{"@timestamp":"2025-03-15T01:53:19.621+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":199625,"log.level":"info","message":"Request details","method":"GET","path":"/docs/doc.json","status_code":200}
+{"@timestamp":"2025-03-15T01:53:19.678+0100","client_ip":"::1","ecs.version":"1.6.0","latency_time":40750,"log.level":"info","message":"Request details","method":"GET","path":"/docs/favicon-32x32.png","status_code":200}
+{"@timestamp":"2025-03-15T01:56:04.419+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2025-03-15T01:56:04.420+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
+{"@timestamp":"2025-03-15T01:56:44.728+0100","ecs.version":"1.6.0","log.level":"info","message":"Successfully connected to the database"}
+{"@timestamp":"2025-03-15T01:56:44.730+0100","ecs.version":"1.6.0","log.level":"info","message":"Starting server on port 8080. Visit the docs at http://localhost:8080/docs/index.html"}
